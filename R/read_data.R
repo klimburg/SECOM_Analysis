@@ -1,8 +1,6 @@
 # Author: Kevin C Limburg
 # Description: Script for reading in raw data and split into training and test
 
-library(caret)
-
 df.secom <- read.table("./data/secom.data")
 df.labels <- read.table("./data/secom_labels.data")
 
