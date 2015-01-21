@@ -2,7 +2,6 @@
 # Description: Cleaning of SECOM training set created from read_data.R
 
 # libraries and source
-library(Hmisc)
 library(dplyr)
 library(caret)
 # helper functions
@@ -20,7 +19,7 @@ results.test <- factor(list.test$labels$V1,labels = c("pass","fail"))
 colsToRemove <- nearZeroVar(df.train)
 na.col.count <- unname(colSums(is.na(df.train)))
 # remove cols with more than 20% missing
-countToRemove <- round(nrow(df.train.mod) * 0.2)
+countToRemove <- round(nrow(df.train) * 0.2)
 colsToRemove <- c(colsToRemove,which(na.col.count > countToRemove))
 df.train.mod <- df.train[, -colsToRemove]
 df.test.mod <- df.test[, -colsToRemove]

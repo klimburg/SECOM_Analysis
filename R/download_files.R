@@ -4,8 +4,12 @@
 
 # check os type and set download method accordingly
 os<-Sys.info()["sysname"]
-if(os == "Windows") dl.method <- "auto"
-else dl.method = "curl"
+if(os == "Windows"){
+  dl.method <- "auto"
+} else {
+  dl.method = "curl"
+}
+  
 
 # check if data directory exists if not create it
 if(!file.exists("./data")) dir.create("./data")

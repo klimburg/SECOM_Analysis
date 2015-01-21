@@ -1,4 +1,6 @@
-# fit ctree model with full pca this might take awhile
+# Author: Kevin C Limburg
+# Description: Script for preProcessing/Feature Selection
+
 library(doParallel)
 library(caret)
 library(FSelector)
@@ -27,38 +29,12 @@ set.seed.cv <- function(init.seed, kFolds, cvRepeats, tuneLength)
 }
 
 # load in the data
-list.mod <- readRDS("data/modified.RDS")
-df.train.mod <- list.mod$train.data
-results.train <- list.mod$train.labels
-df.test.mod <- list.mod$test.data
-results.test <- list.mod$test.labels
+list.preProcess <- readRDS("data/preprocess.RDS")
+df.pca <- list.preProcess$pca
+df.ica <- list.preProcess$ica
+df.chisq <- list.preProcess$chisq
+df.knnImpute<- list.preProcess$knnImpute
 
-# feature selection - 3 methods pca, ica and chi-squared
-# pca
-preProcess.pca <- preProcess(x = df.train.mod,
-                             pcaComp = 60,
-                             k = 5,
-                             method = c("center","scale", "knnImpute", "pca"))
-
-df.pca <- predict(preProcess.pca, newdata = df.train.mod)
-
-# ica
-preProcess.ica <- preProcess(x = df.train.mod,
-                             n.comp = 60, # number of ICA components
-                             k = 5,
-                             method = c("center","scale", "knnImpute", "ica"))
-
-df.ica <- predict(preProcess.ica, newdata = df.train.mod)
-
-# chi squared
-preProcess.chi <- preProcess(x = df.train.mod,
-                             k = 5,
-                             method = c("center","scale", "knnImpute"))
-
-df.knnImpute <- predict(preProcess.chi, newdata = df.train.mod)
-fs.chi <- chi.squared(results.train~., cbind(results.train,df.knnImpute))
-subset <- cutoff.k(fs.chi, 60)
-df.chisq <- df.train.mod[, subset]
 
 cl <- makeCluster(4)
 registerDoParallel(cl)
@@ -156,13 +132,13 @@ model.chi_gbm <- train(x = df.chisq,
                        y = results.train,
                        method = "gbm",
                        metric = "ROC",
-                       tuneLength = tuneLength,
-                       tuneGrid = gbmGrid,
+                       #tuneLength = tuneLength,
+                       #tuneGrid = gbmGrid,
                        trControl = control.model)
 model.chi_gbm
 
 # randomForest models tune param is mtry
-tuneLength <- 30
+tuneLength <- 30i
 seeds.rf <- set.seed.cv(123, kFolds, cvRepeats, tuneLength)
 
 control.model <- trainControl(method = 'repeatedcv', 
@@ -174,7 +150,7 @@ control.model <- trainControl(method = 'repeatedcv',
 
 model.full_rf <- train(x = df.knnImpute, 
                        y = results.train,
-                       method = "rf",
+                       method = "parRF",
                        metric = "ROC",
                        tuneLength = tuneLength,
                        trControl = control.model)
@@ -182,7 +158,7 @@ model.full_rf
 
 model.pca_rf <- train(x = df.pca, 
                       y = results.train,
-                      method = "rf",
+                      method = "parRF",
                       metric = "ROC",
                       tuneLength = tuneLength,
                       trControl = control.model)
@@ -190,7 +166,7 @@ model.pca_rf
 
 model.ica_rf <- train(x = df.ica, 
                       y = results.train,
-                      method = "rf",
+                      method = "parRF",
                       metric = "ROC",
                       tuneLength = tuneLength,
                       trControl = control.model)
@@ -198,7 +174,7 @@ model.ica_rf
 
 model.chi_rf <- train(x = df.chisq, 
                       y = results.train,
-                      method = "rf",
+                      method = "parRF",
                       metric = "ROC",
                       tuneLength = tuneLength,
                       trControl = control.model)
