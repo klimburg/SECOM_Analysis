@@ -53,4 +53,4 @@ list.preProcess.test <- list("pca" = df.pca.test,
                         "ica" = df.ica.test,
                         "chisq" = df.chisq.test,
                         "knnImpute" = df.knnImpute.test)
-saveRDS(list.preProcess.test, "data/preprocess.RDS")
+saveRDS(list.preProcess.test, "data/preprocessTest.RDS")
