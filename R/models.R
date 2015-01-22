@@ -132,13 +132,13 @@ model.chi_gbm <- train(x = df.chisq,
                        y = results.train,
                        method = "gbm",
                        metric = "ROC",
-                       #tuneLength = tuneLength,
-                       #tuneGrid = gbmGrid,
+                       tuneLength = tuneLength,
+                       tuneGrid = gbmGrid,
                        trControl = control.model)
 model.chi_gbm
 
 # randomForest models tune param is mtry
-tuneLength <- 30i
+tuneLength <- 30
 seeds.rf <- set.seed.cv(123, kFolds, cvRepeats, tuneLength)
 
 control.model <- trainControl(method = 'repeatedcv', 
@@ -150,7 +150,7 @@ control.model <- trainControl(method = 'repeatedcv',
 
 model.full_rf <- train(x = df.knnImpute, 
                        y = results.train,
-                       method = "parRF",
+                       method = "rf",
                        metric = "ROC",
                        tuneLength = tuneLength,
                        trControl = control.model)
@@ -158,7 +158,7 @@ model.full_rf
 
 model.pca_rf <- train(x = df.pca, 
                       y = results.train,
-                      method = "parRF",
+                      method = "rf",
                       metric = "ROC",
                       tuneLength = tuneLength,
                       trControl = control.model)
@@ -166,7 +166,7 @@ model.pca_rf
 
 model.ica_rf <- train(x = df.ica, 
                       y = results.train,
-                      method = "parRF",
+                      method = "rf",
                       metric = "ROC",
                       tuneLength = tuneLength,
                       trControl = control.model)
@@ -174,7 +174,7 @@ model.ica_rf
 
 model.chi_rf <- train(x = df.chisq, 
                       y = results.train,
-                      method = "parRF",
+                      method = "rf",
                       metric = "ROC",
                       tuneLength = tuneLength,
                       trControl = control.model)
@@ -230,4 +230,10 @@ model.chi_nb <- train(x = df.chisq,
 model.chi_nb
 
 stopCluster(cl)
+names.models <- ls()[grep("model\\.",ls())]
+mylist.names <- lapply(names.models, function(x) x)
+mylist.names <- setNames(mylist.names, names.models)
+list.models = lapply(mylist.names, get)
 
+
+lapply(list.models, predict, newdata=df) predict()
