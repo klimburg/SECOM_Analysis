@@ -1,5 +1,5 @@
 # Author: Kevin C Limburg
-# Description: Script for preProcessing/Feature Selection
+# Description: Script for building prediction models
 
 library(doParallel)
 library(caret)
@@ -29,6 +29,8 @@ set.seed.cv <- function(init.seed, kFolds, cvRepeats, tuneLength)
 }
 
 # load in the data
+list.modified <- readRDS("data/modified.RDS")
+results.train <- list.modified$train.labels
 list.preProcess <- readRDS("data/preprocess.RDS")
 df.pca <- list.preProcess$pca
 df.ica <- list.preProcess$ica
@@ -234,6 +236,4 @@ names.models <- ls()[grep("model\\.",ls())]
 mylist.names <- lapply(names.models, function(x) x)
 mylist.names <- setNames(mylist.names, names.models)
 list.models = lapply(mylist.names, get)
-
-
-lapply(list.models, predict, newdata=df) predict()
+saveRDS(list.models,"data/models.RDS")

@@ -10,10 +10,10 @@ library(caret)
 # read in train and test, convert labels to factors
 list.train <- readRDS("data/train.RDS")
 df.train <- list.train$data
-results.train <- factor(list.train$labels$V1,labels = c("pass","fail"))
+results.train <- factor(list.train$labels$V1, levels=c(1,-1), labels = c("pass","fail"))
 list.test <- readRDS("data/test.RDS")
 df.test <- list.test$data
-results.test <- factor(list.test$labels$V1,labels = c("pass","fail"))
+results.test <- factor(list.test$labels$V1, levels=c(1,-1), labels = c("pass","fail"))
 
 # id low variance columns and remove from train and test sets
 colsToRemove <- nearZeroVar(df.train)
