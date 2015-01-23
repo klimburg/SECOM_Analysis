@@ -3,7 +3,7 @@
 
 # libraries 
 library(caret)
-
+library(FSelector)
 # load in the data
 list.mod <- readRDS("data/modified.RDS")
 df.train.mod <- list.mod$train.data
