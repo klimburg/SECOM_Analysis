@@ -42,7 +42,7 @@ cl <- makeCluster(4)
 registerDoParallel(cl)
 
 # set CV params
-kFolds <- 10
+kFolds <- 5
 cvRepeats <- 10
 
 # set tunelength for rpart, cp parameter
@@ -59,7 +59,7 @@ control.model <- trainControl(method = 'repeatedcv',
 model.full_rpart <- train(x = df.knnImpute, 
                           y = results.train,
                           method = "rpart",
-                          metric = "ROC",
+                          metric = "Sens",
                           tuneLength = tuneLength,
                           trControl = control.model)
 model.full_rpart
@@ -67,7 +67,7 @@ model.full_rpart
 model.pca_rpart <- train(x = df.pca, 
                          y = results.train,
                          method = "rpart",
-                         metric = "ROC",
+                         metric = "Sens",
                          tuneLength = tuneLength,
                          trControl = control.model)
 model.pca_rpart
@@ -75,7 +75,7 @@ model.pca_rpart
 model.ica_rpart <- train(x = df.ica, 
                          y = results.train,
                          method = "rpart",
-                         metric = "ROC",
+                         metric = "Sens",
                          tuneLength = tuneLength,
                          trControl = control.model)
 model.ica_rpart 
@@ -83,7 +83,7 @@ model.ica_rpart
 model.chi_rpart <- train(x = df.chisq, 
                          y = results.train,
                          method = "rpart",
-                         metric = "ROC",
+                         metric = "Sens",
                          tuneLength = tuneLength,
                          trControl = control.model)
 model.chi_rpart
@@ -106,7 +106,7 @@ control.model <- trainControl(method = 'repeatedcv',
 model.full_gbm <- train(x = df.knnImpute, 
                         y = results.train,
                         method = "gbm",
-                        metric = "ROC",
+                        metric = "Sens",
                         tuneLength = tuneLength,
                         tuneGrid = gbmGrid,
                         trControl = control.model)
@@ -115,7 +115,7 @@ model.full_gbm
 model.pca_gbm <- train(x = df.pca, 
                        y = results.train,
                        method = "gbm",
-                       metric = "ROC",
+                       metric = "Sens",
                        tuneLength = tuneLength,
                        tuneGrid = gbmGrid,
                        trControl = control.model)
@@ -124,7 +124,7 @@ model.pca_gbm
 model.ica_gbm <- train(x = df.ica, 
                        y = results.train,
                        method = "gbm",
-                       metric = "ROC",
+                       metric = "Sens",
                        tuneLength = tuneLength,
                        tuneGrid = gbmGrid,
                        trControl = control.model)
@@ -133,7 +133,7 @@ model.ica_gbm
 model.chi_gbm <- train(x = df.chisq, 
                        y = results.train,
                        method = "gbm",
-                       metric = "ROC",
+                       metric = "Sens",
                        tuneLength = tuneLength,
                        tuneGrid = gbmGrid,
                        trControl = control.model)
@@ -150,18 +150,19 @@ control.model <- trainControl(method = 'repeatedcv',
                               classProbs = TRUE,                            
                               summaryFunction = twoClassSummary)
 
-model.full_rf <- train(x = df.knnImpute, 
-                       y = results.train,
-                       method = "rf",
-                       metric = "ROC",
-                       tuneLength = tuneLength,
-                       trControl = control.model)
-model.full_rf
+# this takes to long
+# model.full_rf <- train(x = df.knnImpute, 
+#                        y = results.train,
+#                        method = "rf",
+#                        metric = "Sens",
+#                        tuneLength = tuneLength,
+#                        trControl = control.model)
+# model.full_rf
 
 model.pca_rf <- train(x = df.pca, 
                       y = results.train,
                       method = "rf",
-                      metric = "ROC",
+                      metric = "Sens",
                       tuneLength = tuneLength,
                       trControl = control.model)
 model.pca_rf
@@ -169,7 +170,7 @@ model.pca_rf
 model.ica_rf <- train(x = df.ica, 
                       y = results.train,
                       method = "rf",
-                      metric = "ROC",
+                      metric = "Sens",
                       tuneLength = tuneLength,
                       trControl = control.model)
 model.ica_rf 
@@ -177,7 +178,7 @@ model.ica_rf
 model.chi_rf <- train(x = df.chisq, 
                       y = results.train,
                       method = "rf",
-                      metric = "ROC",
+                      metric = "Sens",
                       tuneLength = tuneLength,
                       trControl = control.model)
 model.chi_rf
@@ -194,20 +195,20 @@ control.model <- trainControl(method = 'repeatedcv',
                               repeats = cvRepeats,
                               classProbs = TRUE,                            
                               summaryFunction = twoClassSummary)
-
-model.full_nb <- train(x = df.knnImpute, 
-                       y = results.train,
-                       method = "nb",
-                       metric = "ROC",
-                       tuneLength = tuneLength,
-                       tuneGrid = nbGrid,
-                       trControl = control.model)
-model.full_nb
+# this takes to long
+# model.full_nb <- train(x = df.knnImpute, 
+#                        y = results.train,
+#                        method = "nb",
+#                        metric = "Sens",
+#                        tuneLength = tuneLength,
+#                        tuneGrid = nbGrid,
+#                        trControl = control.model)
+# model.full_nb
 
 model.pca_nb <- train(x = df.pca, 
                       y = results.train,
                       method = "nb",
-                      metric = "ROC",
+                      metric = "Sens",
                       tuneLength = tuneLength,
                       tuneGrid = nbGrid,
                       trControl = control.model)
@@ -216,7 +217,7 @@ model.pca_nb
 model.ica_nb <- train(x = df.ica, 
                       y = results.train,
                       method = "nb",
-                      metric = "ROC",
+                      metric = "Sens",
                       tuneLength = tuneLength,
                       tuneGrid = nbGrid,
                       trControl = control.model)
@@ -225,7 +226,7 @@ model.ica_nb
 model.chi_nb <- train(x = df.chisq, 
                       y = results.train,
                       method = "nb",
-                      metric = "ROC",
+                      metric = "Sens",
                       tuneLength = tuneLength,
                       tuneGrid = nbGrid,
                       trControl = control.model)

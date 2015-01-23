@@ -25,4 +25,16 @@ list.train <- list("data"   = df.secom.train,
 
 saveRDS(list.test,"./data/test.RDS")
 saveRDS(list.train,"./data/train.RDS")
+
+# split in time series 70 pct
+splitPoint <- floor(nrow(df.labels)*0.7)
+df.train.ts <- df.secom[1:splitPoint,]
+df.test.ts <- df.secom[(splitPoint+1):nrow(df.secom),]
+df.train.ts.label <- df.labels[1:splitPoint,]
+df.test.ts.label <- df.labels[(splitPoint+1):nrow(df.labels),]
+list.ts <- list("data.train"   = df.train.ts , 
+                "labels.train" = df.train.ts.label,
+                "data.test"   = df.test.ts , 
+                "labels.test" = df.test.ts.label)
+saveRDS(list.ts,"./data/ts.RDS")
 rm(list=ls())
