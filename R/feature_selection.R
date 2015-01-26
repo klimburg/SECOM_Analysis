@@ -42,6 +42,9 @@ subset <- cutoff.k(fs.chi, 60)
 df.chisq <- df.knnImpute[, subset]
 df.chisq.test <- df.knnImpute.test[, subset]
 
+fs.gain<-gain.ratio(results.train~., cbind(results.train,df.knnImpute))
+
+
 
 list.preProcess <- list("pca" = df.pca,
                         "ica" = df.ica,

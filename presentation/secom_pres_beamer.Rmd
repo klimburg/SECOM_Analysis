@@ -1,0 +1,214 @@
+---
+title: "Predictive Quality Modeling in Semiconductor Manufacturing"
+author: "Kevin C. Limburg"
+date: "Sunday, January 25, 2015"
+output:
+  ioslides_presentation:
+    smaller: yes
+  beamer_presentation: default
+beamer_presentation: default
+---
+
+## Introduction
+
+```{r intro, echo=FALSE, warning=FALSE}
+suppressMessages(library(knitr))
+knitr::opts_chunk$set(cache=TRUE)
+setwd(dir = "C:/Users/kclimbur/Desktop/R/SECOM_Analysis/")
+source("R/read_data.R")
+```
+
+In many modern manufacturing settings, the amount of data being generated makes
+univariate SPC methods impractical. 
+
+This presentation explores the use of machine learning algorithms 
+to identify semiconductor lots with low yields.
+
+The dataset comes from the 
+[UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/SECOM).
+
+
+## Methodology
+
+* Split data into training and test sets
+* Pre-processing the data to remove missing values and reduce feature set    
+* Tune models on training data set
+* Compare results of best models from training on the held out test set
+
+
+## Split Data
+```{r split, dependson='intro', echo=FALSE}
+
+```
+* The data set contains `r nrow(df.secom)` semiconductor wafer batches with
+`r ncol(df.secom)` features
+* Each batch is given a binary classification of acceptable or not based on yield 
+* There are only `r sum(df.labels$V1==1)` failures in the entire dataset
+* There are a total of `r sum(is.na(df.secom))` missing values
+* Split the data into training and test sets (70%/30%)
+
+
+## Pre-processing
+```{r preProcess, echo=FALSE, dependson= 'intro', warning=FALSE}
+setwd(dir = "C:/Users/kclimbur/Desktop/R/SECOM_Analysis/")
+suppressMessages(library(caret))
+modifiedList<- readRDS("data/modified.RDS")
+preProcessList<- readRDS("data/preprocess.RDS")
+source("./R/clean_data.R")
+countZero <- length(nearZeroVar(df.train))
+```
+
+* The test set is put to the side for now
+* Remove zero and near zero variance features (n=`r countZero`)
+* Remove features where more than 20% of values are missing (n=`r sum(na.col.count > countToRemove)`)
+* Center and scale each feature to mean of 0 and variance of 1
+* Impute missing data using k-nearest neighbors (k=5)
+* Feature selection using PCA, ICA and Chi-Squared (n=60)
+
+
+```{r preProcessPlot, echo=FALSE, dependson= 'preProcess', warning=FALSE, fig.align='center', fig.height= 3.5, fig.width=7, fig.cap= "Figure 1: The plot shows the scatterplot of the top 2 features selected by three different feature selection methods. The coloring of the points indicates the true classification of the batch."}
+
+suppressMessages(library(ggplot2))
+suppressMessages(library(dplyr))
+suppressMessages(library(magrittr))
+preProcessCompare <- data.frame("Method" = "PCA",
+                                "First.Feature" = preProcessList$pca$PC1,
+                                "Second.Feature" = preProcessList$pca$PC2,
+                                "result" = modifiedList$train.labels)
+preProcessCompare <- rbind(preProcessCompare,
+                           data.frame("Method" = "ICA",
+                                      "First.Feature" = preProcessList$ica$ICA1,
+                                      "Second.Feature" = preProcessList$ica$ICA2,
+                                      "result" = modifiedList$train.labels))
+preProcessCompare <- rbind(preProcessCompare,
+                           data.frame("Method" = "Chi-Squared",
+                                      "First.Feature" = preProcessList$chisq$V60,
+                                      "Second.Feature" = preProcessList$chisq$V65,
+                                      "result" = modifiedList$train.labels))
+preProcessCompare%<>%arrange(desc(result))
+
+ggplot(data=preProcessCompare,
+       aes(x=First.Feature, y=Second.Feature, color=result))+
+      geom_point()+
+      facet_wrap(~Method, scales="free")+
+      theme_bw()+
+      labs(title="Scatterplot of Top Two Features Selected\nWith Different Feature Selection Methods", 
+           x="First Feature", y="Second Feature",color = "Batch Classification")+
+      theme(plot.title = element_text(size = 11), axis.title = element_text(size=10))
+
+```
+
+## Feature Selection Continued
+
+Heat Maps of Correlation Matrix By Feature Selection Method
+```{r preProcessPlot2, echo=FALSE, dependson= 'preProcessPlot', warning=FALSE, fig.align='center', fig.cap= "Figure 2: Heat Maps of Correlation Matrix after Feature Selection."}
+suppressMessages(library(corrplot))
+par(mfrow=c(2,2))
+corrplot(cor(preProcessList$chisq),  method = "color",
+         addgrid.col=NULL, outline=F, tl.pos = "n",
+         main = "Chi-squared Feature Selection",
+         mar=c(1,0,1,0))
+corrplot(cor(preProcessList$pca),  method = "color",
+         addgrid.col=NULL, outline=F, tl.pos = "n",
+         main = "PCA Feature Selection",
+         mar=c(1,0,1,0))
+corrplot(cor(preProcessList$ica),  method = "color",
+         addgrid.col=NULL, outline=F, tl.pos = "n",
+         main = "ICA Feature Selection",
+         mar=c(1,0,1,0))
+
+
+par(mfrow=c(1,1))
+
+```
+
+## Model Selection
+We attempted to build a prediction model using the following four algorithms:
+
+* [Decision Tree](http://cran.r-project.org/web/packages/rpart/rpart.pdf)
+* [Random Forest](http://cran.r-project.org/web/packages/randomForest/randomForest.pdf)
+* [Naive Bayes](http://cran.r-project.org/web/packages/klaR/klaR.pdf)
+* [Stochastic Gradiant Boosting](http://cran.r-project.org/web/packages/gbm/gbm.pdf)
+
+Additionally these models were fit using repeated cross validation (5-fold, 10 times)
+and with three feature selection methods and the full data set after centering,
+scaling, imputing missing values. 
+
+Due to high computational times required to train the Random Forest and Naive Bayes,
+these models were not fit with the full dataset. 
+
+## Training
+```{r training, echo=FALSE, dependson= 'preProcessPlot2', warning=FALSE}
+suppressMessages(library(rattle))
+setwd(dir = "C:/Users/kclimbur/Desktop/R/SECOM_Analysis/")
+models<- readRDS("data/models.RDS")
+```
+* The models were tuned with the relevant tuning parameters for each algorithm
+* Sensitivity was used as the tuning metric versus accuracy or ROC 
+due to high class imbalance.
+*  One model per combination of feature set and algorithm was chosen for
+evaluation against the test set.
+```{r training_plots, echo=FALSE, dependson= 'training', warning=FALSE, fig.align='center', fig.height= 3.5, fig.width=7, fig.cap= "Figure 3: The plot shows the sensitivity from repeated cross validations of a stochastic gradient boosting model."}
+ggplot(models$model.chi_gbm)+
+      labs(title = "Sensitivity of Stochastic Gradient Boosting Model Training\nUsing Chi-Squared Feature Selection")+
+      theme(plot.title = element_text(size = 11), axis.title = element_text(size=10))+
+      theme_bw()
+```
+
+
+## Model Comparison
+
+* Naive Bayes with Chi-squared FS had the highest sensitivity but the lowest specificity 
+* None of the models had accuracy rates that were significantly better than the No Information Rate
+
+```{r models, echo=FALSE, dependson='training_plots', warning=FALSE, fig.align='center', fig.cap= "Figure 4: Scatterplot of Sensitivity and Specificity by Algorithm and Feature Selection Method"}
+suppressMessages(library(reshape2))
+setwd(dir = "C:/Users/kclimbur/Desktop/R/SECOM_Analysis/")
+suppressMessages(source("./R/prediction.R"))
+df.pred <- expand.grid("Alg" = c("DT", "SGB", "NB","RF"), 
+                       "FS" = c("Chi", "PCA", "ICA", "Full"))
+
+df.pred2 <- rbind(confMat.chi_rpart$byClass,
+                  confMat.chi_gbm$byClass,
+                  confMat.chi_nb$byClass,
+                  confMat.chi_rf$byClass,
+                  confMat.pca_rpart$byClass,
+                  confMat.pca_gbm$byClass,
+                  confMat.pca_nb$byClass,
+                  confMat.pca_rf$byClass,
+                  confMat.ica_rpart$byClass,
+                  confMat.ica_gbm$byClass,
+                  confMat.ica_nb$byClass,
+                  confMat.ica_rf$byClass,
+                  confMat.full_rpart$byClass,
+                  confMat.full_gbm$byClass,
+                  rep(NA,8),
+                  rep(NA,8))
+
+df.pred <- cbind(df.pred, df.pred2)
+df.pred.melt <- melt(df.pred, id.vars = c("Alg", "FS"), variable.name = "Metric") %>%
+      filter(Metric %in% c("Sensitivity", "Specificity", "Balanced Accuracy"))
+# 
+# ggplot(df.pred.melt)+
+#       geom_bar(stat="identity",
+#                aes(x=FS, y = value, group=Alg, fill = Alg),
+#                position="dodge")+
+#       facet_wrap(~Metric, ncol=4)
+
+ggplot(df.pred)+geom_point(aes(x=Sensitivity, y=Specificity, color=Alg, shape=FS))+
+      labs(title = "Scatterplot of Sensitivity and Specificity\nby Algorithm and Feature Selection Method"
+           ,color="Algorithm", shape="FS Method")+
+      theme_bw()
+
+```
+
+## Conclusions and Next Steps
+
+* The results highlight common issues with fault detection in manufacturing of complex systems/processes
+      * High Feature Counts
+      * Low Observation Counts
+      * Trade-offs between Type 1 and Type 2 Error
+* Explore alternative feature selection methods (e.g. Information Gain)
+* Artifically inflate number of batch failures in training set to improve ability of classification algorithms
+* Compare to multivariate SPC models (e.g. T^2^, MEWMA)
+

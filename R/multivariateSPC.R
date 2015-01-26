@@ -39,3 +39,9 @@ chi_t2Violations <- chi_t2$violations$beyond.pred.limits
 predFail.chi<-chi_t2Violations[which(chi_t2Violations >splitPoint)]-splitPoint
 predictions[predFail.chi,"chi_pred"] <- factor("fail", levels=c("fail","pass"))
 confusionMatrix(predictions$chi_pred, reference = predictions$actual, positive = "fail")
+
+
+ewma(data = df.pca[,c(1,10)],sizes = 1)
+
+
+

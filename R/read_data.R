@@ -37,4 +37,3 @@ list.ts <- list("data.train"   = df.train.ts ,
                 "data.test"   = df.test.ts , 
                 "labels.test" = df.test.ts.label)
 saveRDS(list.ts,"./data/ts.RDS")
-rm(list=ls())

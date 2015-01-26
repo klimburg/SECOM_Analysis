@@ -1,6 +1,6 @@
 # Author: Kevin C Limburg
 # Description: Script for applying prediction models to test set
-library(caret)
+suppressMessages(library(caret))
 list.models <- readRDS("data/models.RDS")
 list.testData <- readRDS("data/preprocessTest.RDS")
 list.modified <- readRDS("data/modified.RDS")
