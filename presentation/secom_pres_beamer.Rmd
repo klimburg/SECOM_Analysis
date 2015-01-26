@@ -211,4 +211,5 @@ ggplot(df.pred)+geom_point(aes(x=Sensitivity, y=Specificity, color=Alg, shape=FS
 * Explore alternative feature selection methods (e.g. Information Gain)
 * Artifically inflate number of batch failures in training set to improve ability of classification algorithms
 * Compare to multivariate SPC models (e.g. T^2^, MEWMA)
+* Source code can be found at my [github page](https://github.com/klimburg/SECOM_Analysis)
 
