@@ -148,7 +148,7 @@ models<- readRDS("data/models.RDS")
 due to high class imbalance.
 *  One model per combination of feature set and algorithm was chosen for
 evaluation against the test set.
-```{r training_plots, echo=FALSE, dependson= 'training', warning=FALSE, fig.align='center', fig.height= 3.5, fig.width=7, fig.cap= "Figure 3: The plot shows the sensitivity from repeated cross validations of a stochastic gradient boosting model."}
+```{r training_plots, echo=FALSE, dependson= 'training', warning=FALSE, fig.align='center', fig.height= 3.5, fig.width=7, fig.cap= "Figure 3: Sensitivity from repeated cross validations of a stochastic gradient boosting model."}
 ggplot(models$model.chi_gbm)+
       labs(title = "Sensitivity of Stochastic Gradient Boosting Model Training\nUsing Chi-Squared Feature Selection")+
       theme(plot.title = element_text(size = 11), axis.title = element_text(size=10))+
